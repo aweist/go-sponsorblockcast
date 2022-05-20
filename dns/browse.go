@@ -11,7 +11,8 @@ import (
 	"github.com/grandcat/zeroconf"
 )
 
-func Browse(chromecastMap models.ChromecastMapIface) {
+func Browse() models.ChromecastMapIface {
+	chromecastMap := models.NewChromecastMap()
 	resolver, err := zeroconf.NewResolver(nil)
 	if err != nil {
 		log.Fatalln("Failed to initialize resolver:", err.Error())
@@ -20,7 +21,7 @@ func Browse(chromecastMap models.ChromecastMapIface) {
 	entries := make(chan *zeroconf.ServiceEntry)
 	go func(results <-chan *zeroconf.ServiceEntry) {
 		for entry := range results {
-			printServiceEntry(entry)
+			// printServiceEntry(entry)
 			txt := textRecordMap(entry.Text)
 			chromecastMap.Store(models.CastEntry{
 				ID:   entry.Instance,
@@ -35,12 +36,13 @@ func Browse(chromecastMap models.ChromecastMapIface) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancel()
-	err = resolver.Browse(ctx, "_googlecast._tcp", "local.", entries)
+	err = resolver.Browse(ctx, "_googlecast._tcp", "local", entries)
 	if err != nil {
 		log.Fatalln("Failed to browse:", err.Error())
 	}
 
 	<-ctx.Done()
+	return chromecastMap
 }
 
 func textRecordMap(records []string) map[string]string {

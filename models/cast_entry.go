@@ -1,6 +1,10 @@
 package models
 
-import "net"
+import (
+	"encoding/json"
+	"log"
+	"net"
+)
 
 type CastEntry struct {
 	ID   string
@@ -8,4 +12,12 @@ type CastEntry struct {
 	Type string
 	Port int
 	IPv4 net.IP
+}
+
+func (ce CastEntry) Print() {
+	json, err := json.MarshalIndent(ce, "", "  ")
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(string(json))
 }
